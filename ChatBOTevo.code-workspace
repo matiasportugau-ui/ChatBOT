@@ -5,7 +5,12 @@
 		},
 		{
 			"path": "../.."
+		},
+		{
+			"path": "../../../../../Documents/BOT"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"python.analysis.typeCheckingMode": "standard"
+	}
 }
