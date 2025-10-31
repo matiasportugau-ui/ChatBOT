@@ -1,0 +1,357 @@
+{
+  "name": "WF_MAIN_orchestrator_v4",
+  "nodes": [
+    {
+      "id": "Webhook_Chatwoot",
+      "name": "Webhook Chatwoot",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        300,
+        200
+      ],
+      "parameters": {
+        "path": "chatwoot/incoming",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "Fn_ParseMask",
+      "name": "Fn Parse+PII Mask",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        560,
+        200
+      ],
+      "parameters": {
+        "functionCode": "const mask=s=>s?.replace(/\\b\\d{6,}\\b/g,'[NUM]').replace(/([\\w.-]+)@([\\w.-]+)/g,'[EMAIL]'); const e=items[0].json; const body=e?.content||e?.message?.content||''; return [{json:{source:e, channel:e?.meta?.channel||e?.channel, conversation_id:e?.conversation?.id||e?.conversation_id, contact_id:e?.contact?.id||e?.sender?.id, body_masked:mask(body)}}];"
+      }
+    },
+    {
+      "id": "HTTP_ConvDetails",
+      "name": "Chatwoot Conversation Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        820,
+        200
+      ],
+      "parameters": {
+        "url": "{{CHATWOOT_BASE_URL}}/api/v1/accounts/{{CHATWOOT_ACCOUNT_ID}}/conversations/{{$json.conversation_id}}",
+        "options": {
+          "headers": {
+            "api_access_token": "{{CHATWOOT_API_TOKEN}}"
+          }
+        }
+      }
+    },
+    {
+      "id": "IF_ModeReply",
+      "name": "IF reply_mode==true",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1080,
+        120
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$getWorkflowStaticData('global').reply_mode === true}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "IF_CanReply",
+      "name": "IF can_reply",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1080,
+        280
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.can_reply === true}}",
+              "value2": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "HTTP_Rasa",
+      "name": "Rasa /webhooks/rest/webhook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1340,
+        60
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "{{RASA_URL}}/webhooks/rest/webhook",
+        "jsonParameters": true,
+        "options": {
+          "timeout": 30
+        },
+        "bodyParametersJson": "={\"sender\":\"{{$json.contact_id}}\",\"message\":\"{{$json.body_masked}}\"}"
+      }
+    },
+    {
+      "id": "HTTP_Qdrant",
+      "name": "Qdrant Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1340,
+        160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "{{QDRANT_URL}}/collections/products/points/search",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\"vector\":{{$json.embed || []}},\"top\":5,\"filter\":{\"must\":[{\"key\":\"language\",\"match\":{\"value\":\"es\"}}]}}"
+      }
+    },
+    {
+      "id": "Fn_ComposeAnswer",
+      "name": "Fn Compose Answer",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        100
+      ],
+      "parameters": {
+        "functionCode": "const rasa=items[0].json; const hits=items[1]?.json?.result||[]; const pick=h=>h?.payload?.title+(h?.payload?.price?` - $${h.payload.price}`:''); const top=hits.slice(0,3).map(pick).filter(Boolean).join('\\n'); return [{json:{reply:`${rasa?.[0]?.text||''}${top?'\\n\\nSugerencias:\\n'+top:''}`}}];"
+      }
+    },
+    {
+      "id": "HTTP_CreateMsg",
+      "name": "Chatwoot Create Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1860,
+        60
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "{{CHATWOOT_BASE_URL}}/public/api/v1/inboxes/{{INBOX_ID}}/contacts/{{CONTACT_SOURCE_ID}}/conversations/{{CONVERSATION_ID}}/messages",
+        "jsonParameters": true,
+        "options": {
+          "headers": {
+            "Content-Type": "application/json"
+          }
+        },
+        "bodyParametersJson": "={\"content\":\"{{$json.reply}}\"}"
+      }
+    },
+    {
+      "id": "HTTP_SendTemplate",
+      "name": "WhatsApp Template (via provider)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1860,
+        320
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "{{WABA_PROVIDER_URL}}/messages",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\"messaging_product\":\"whatsapp\",\"to\":\"{{TO_MSISDN}}\",\"type\":\"template\",\"template\":{\"name\":\"{{TEMPLATE_NAME}}\",\"language\":{\"code\":\"es\"},\"components\":[{\"type\":\"body\",\"parameters\":[{\"type\":\"text\",\"text\":\"{{PARAM_1}}\"}]}]}}"
+      }
+    },
+    {
+      "id": "GS_Append",
+      "name": "Google Sheets Append",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        2120,
+        180
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": "{{GSHEET_ID}}",
+        "range": "Interacciones!A:Z",
+        "options": {
+          "valueInputMode": "RAW"
+        },
+        "values": "=[[{{$json.contact_id}}],[{{$json.reply}}],[{{$now}}]]"
+      }
+    },
+    {
+      "id": "SMTP_Notify",
+      "name": "SMTP Notify",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        2120,
+        320
+      ],
+      "parameters": {
+        "fromEmail": "bot@{{YOUR_DOMAIN}}",
+        "toEmail": "ops@{{YOUR_DOMAIN}}",
+        "subject": "Plantilla obligatoria (24h) para {{$json.contact_id}}",
+        "text": "Se intentó responder fuera de ventana. Enviado template."
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "Fn Parse+PII Mask",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fn Parse+PII Mask": {
+      "main": [
+        [
+          {
+            "node": "Chatwoot Conversation Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chatwoot Conversation Details": {
+      "main": [
+        [
+          {
+            "node": "IF reply_mode==true",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IF can_reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF reply_mode==true": {
+      "main": [
+        [
+          {
+            "node": "Rasa /webhooks/rest/webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets Append",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF can_reply": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Template (via provider)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rasa /webhooks/rest/webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rasa /webhooks/rest/webhook": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Search": {
+      "main": [
+        [
+          {
+            "node": "Fn Compose Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fn Compose Answer": {
+      "main": [
+        [
+          {
+            "node": "Chatwoot Create Message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Sheets Append",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Template (via provider)": {
+      "main": [
+        [
+          {
+            "node": "SMTP Notify",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Sheets Append",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "export_seal": {
+    "project": "auto-atc",
+    "prompt_id": "WF_MAIN_orchestrator_v4",
+    "version": "3.0.0",
+    "file": "n8n/WF_MAIN_orchestrator_v4.json",
+    "lang": "json",
+    "created_at": "2025-10-31T00:10:55Z",
+    "author": "GPT-5 Thinking",
+    "origin": "bundle",
+    "body_sha256": "97f1e0048edd7825b768e85450166c9ab782246c8d47900593c9cdc9513a4167"
+  }
+}

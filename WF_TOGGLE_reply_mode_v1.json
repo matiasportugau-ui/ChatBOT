@@ -1,0 +1,57 @@
+{
+  "name": "WF_TOGGLE_reply_mode_v1",
+  "nodes": [
+    {
+      "id": "ToggleWebhook",
+      "name": "Webhook Toggle",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        300,
+        200
+      ],
+      "parameters": {
+        "path": "chatwoot/toggle_reply",
+        "httpMethod": "POST",
+        "responseMode": "onReceived"
+      }
+    },
+    {
+      "id": "Fn_Toggle",
+      "name": "Fn Set StaticData",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        560,
+        200
+      ],
+      "parameters": {
+        "functionCode": "const sd=$getWorkflowStaticData('global'); const v=items[0].json?.reply_mode; sd.reply_mode=Boolean(v); return [{json:{reply_mode:sd.reply_mode}}];"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Toggle": {
+      "main": [
+        [
+          {
+            "node": "Fn Set StaticData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "export_seal": {
+    "project": "auto-atc",
+    "prompt_id": "WF_TOGGLE_reply_mode_v1",
+    "version": "3.0.0",
+    "file": "n8n/WF_TOGGLE_reply_mode_v1.json",
+    "lang": "json",
+    "created_at": "2025-10-31T00:10:55Z",
+    "author": "GPT-5 Thinking",
+    "origin": "bundle",
+    "body_sha256": "37efa4c4d3d55af332dcef57de77b3203a16437ab7da76b1a64325dabb24d2a9"
+  }
+}

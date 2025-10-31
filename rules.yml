@@ -1,0 +1,26 @@
+version: "3.1"
+rules:
+- rule: activar cotizacion form
+  steps:
+    - intent: cotizar_producto
+    - action: cotizacion_form
+    - active_loop: cotizacion_form
+
+- rule: enviar al completar form
+  condition:
+    - active_loop: cotizacion_form
+  steps:
+    - action: cotizacion_form
+    - active_loop: null
+    - action: action_register_quote
+
+# EXPORT_SEAL v1
+# project: auto-atc
+# prompt_id: rasa-rules-v3
+# version: 3.0.0
+# file: rasa/rules.yml
+# lang: yaml
+# created_at: 2025-10-31T00:10:55Z
+# author: GPT-5 Thinking
+# origin: rasa-spec
+# body_sha256: e11981ea05e186a1d36eed79b1b0dcdaa783ff9f86c406af7cdde727389f30e8

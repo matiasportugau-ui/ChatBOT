@@ -1,0 +1,55 @@
+{
+  "name": "WF_ERRORS_notify_v1",
+  "nodes": [
+    {
+      "id": "ErrTrig",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        300,
+        200
+      ]
+    },
+    {
+      "id": "SMTP",
+      "name": "SMTP Ops",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        560,
+        200
+      ],
+      "parameters": {
+        "fromEmail": "n8n@{{YOUR_DOMAIN}}",
+        "toEmail": "ops@{{YOUR_DOMAIN}}",
+        "subject": "n8n ERROR: {{$json.workflow.name}}",
+        "text": "{{$json.trigger.error.message}}"
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "SMTP Ops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "export_seal": {
+    "project": "auto-atc",
+    "prompt_id": "WF_ERRORS_notify_v1",
+    "version": "3.0.0",
+    "file": "n8n/WF_ERRORS_notify_v1.json",
+    "lang": "json",
+    "created_at": "2025-10-31T00:10:55Z",
+    "author": "GPT-5 Thinking",
+    "origin": "bundle",
+    "body_sha256": "1a42221731b32795354ce2f7c041a70563748178c310a01cc0a21984249986f8"
+  }
+}

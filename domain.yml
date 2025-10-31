@@ -1,0 +1,31 @@
+version: "3.1"
+intents: [cotizar_producto, saludo, despedida, fallback]
+entities: [producto, sku, cantidad, email, telefono]
+slots:
+  producto: {type: text, influence_conversation: true}
+  sku: {type: text}
+  cantidad: {type: text}
+  email: {type: text}
+  telefono: {type: text}
+forms:
+  cotizacion_form:
+    required_slots:
+      - producto
+      - sku
+      - cantidad
+responses:
+  utter_ask_producto: ["¿Qué producto querés cotizar?"]
+  utter_ask_sku: ["¿Tenés SKU/variante? (si no, decime color/talla)"]
+  utter_ask_cantidad: ["¿Qué cantidad necesitás?"]
+  utter_submit: ["¡Gracias! Estoy registrando tu solicitud."]
+
+# EXPORT_SEAL v1
+# project: auto-atc
+# prompt_id: rasa-domain-v3
+# version: 3.0.0
+# file: rasa/domain.yml
+# lang: yaml
+# created_at: 2025-10-31T00:10:55Z
+# author: GPT-5 Thinking
+# origin: rasa-spec
+# body_sha256: 56b31da1aed9dfe1724e752877a354b45debd1e20d04b9a2acc32f7f17532ce1

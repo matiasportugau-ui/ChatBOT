@@ -1,0 +1,132 @@
+{
+  "name": "WF_KB_ingest_v2",
+  "nodes": [
+    {
+      "id": "WB_Ingest",
+      "name": "Webhook KB Ingest",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        300,
+        200
+      ],
+      "parameters": {
+        "path": "kb/ingest",
+        "httpMethod": "POST",
+        "responseMode": "onReceived"
+      }
+    },
+    {
+      "id": "Fn_Split",
+      "name": "Fn Chunk",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [
+        560,
+        200
+      ],
+      "parameters": {
+        "functionCode": "const text=items[0].json.text||''; const CH=800; let out=[]; for(let i=0;i<text.length;i+=CH){ out.push({json:{chunk:text.slice(i,i+CH)}});} return out;"
+      }
+    },
+    {
+      "id": "HTTP_TEI",
+      "name": "TEI Embed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        820,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "{{TEI_URL}}/embeddings",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\"inputs\":\"{{$json.chunk}}\",\"truncate\":true}"
+      }
+    },
+    {
+      "id": "HTTP_QdrantUp",
+      "name": "Qdrant Upsert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1080,
+        200
+      ],
+      "parameters": {
+        "method": "PUT",
+        "url": "{{QDRANT_URL}}/collections/products/points?wait=true",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\"points\":[{\"id\":\"={{$json.id || $now}}\",\"vector\":{{$json.embeddings?.[0]?.embedding || []}},\"payload\":{{PAYLOAD_TEMPLATE}}}]}"
+      }
+    },
+    {
+      "id": "GS_Propose",
+      "name": "Google Sheets Proposals",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [
+        1340,
+        200
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": "{{GSHEET_ID}}",
+        "range": "KB_Suggestions!A:Z",
+        "values": "=[[\"{{$now}}\",\"source\",\"lang\",\"title\",\"{{$json.chunk.slice(0,80)}}\"]]"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook KB Ingest": {
+      "main": [
+        [
+          {
+            "node": "Fn Chunk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fn Chunk": {
+      "main": [
+        [
+          {
+            "node": "TEI Embed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TEI Embed": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Upsert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Sheets Proposals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "export_seal": {
+    "project": "auto-atc",
+    "prompt_id": "WF_KB_ingest_v2",
+    "version": "3.0.0",
+    "file": "n8n/WF_KB_ingest_v2.json",
+    "lang": "json",
+    "created_at": "2025-10-31T00:10:55Z",
+    "author": "GPT-5 Thinking",
+    "origin": "bundle",
+    "body_sha256": "3ac4ceb201f6b268117c5daa1a2845c4fa409197b664989f932980b9826577b4"
+  }
+}

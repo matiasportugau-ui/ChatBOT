@@ -1,0 +1,56 @@
+version: "3.9"
+services:
+  traefik:
+    image: traefik:v3.0
+    command:
+      - --providers.docker=true
+      - --entrypoints.web.address=:80
+    ports: ["80:80"]
+    volumes: ["/var/run/docker.sock:/var/run/docker.sock:ro"]
+
+  chatwoot:
+    image: chatwoot/chatwoot:latest
+    env_file: .env.chatwoot
+    depends_on: [postgres, redis]
+    ports: ["3000:3000"]
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: atc
+      POSTGRES_PASSWORD: atc_pass
+      POSTGRES_DB: atcdb
+    volumes: ["./pgdata:/var/lib/postgresql/data"]
+    ports: ["5432:5432"]
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+
+  n8n:
+    image: n8nio/n8n:latest
+    env_file: .env.n8n
+    ports: ["5678:5678"]
+    volumes: ["./n8n_data:/home/node/.n8n"]
+
+  rasa:
+    image: rasa/rasa:3.6.20-full
+    command: ["run","--enable-api","--cors","*","--port","5005"]
+    volumes: ["./rasa:/app"]
+    ports: ["5005:5005"]
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports: ["6333:6333","6334:6334"]
+    volumes: ["./qdrant_storage:/qdrant/storage"]
+
+# EXPORT_SEAL v1
+# project: auto-atc
+# prompt_id: infra-v3
+# version: 3.0.0
+# file: docker-compose.yml
+# lang: yaml
+# created_at: 2025-10-31T00:10:55Z
+# author: GPT-5 Thinking
+# origin: infra-blueprint
+# body_sha256: df982c2b305fa843621da975c39d1f369c165b10caab866192e76bf8b4a68b32
