@@ -1,3 +1,7 @@
 {
-    "python.analysis.typeCheckingMode": "standard"
+    "python.analysis.typeCheckingMode": "standard",
+    "shellcheck.executablePath": "/opt/homebrew/bin/shellcheck",
+    "shellcheck.customArgs": [],
+    "shellcheck.exclude": [],
+    "shellcheck.run": "onType"
 }
