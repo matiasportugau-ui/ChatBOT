@@ -15,3 +15,4 @@ stories:
   - active_loop: cotizacion_form
   - active_loop: null
   - action: action_cotizar
+  - action: action_register_quote
