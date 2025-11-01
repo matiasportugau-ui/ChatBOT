@@ -1,0 +1,25 @@
+version: "3.1"
+
+nlu:
+- intent: saludo
+  examples: |
+    - hola
+    - buenas
+    - buen día
+    - qué tal
+    - buenos días
+
+- intent: despedida
+  examples: |
+    - chau
+    - adiós
+    - nos vemos
+    - hasta luego
+
+- intent: cotizar_producto
+  examples: |
+    - quiero cotizar [remera](producto)
+    - necesito precio de [zapatillas](producto) [SKU-123](sku)
+    - cotizame [3](cantidad) [gorras](producto)
+    - precio de [buzo](producto)
+    - cuánto sale [campera](producto) talle [L](sku)

@@ -1,15 +1,69 @@
-name: ci
+name: rasa-ci
 on: [push, pull_request]
+concurrency:
+  group: rasa-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-  build:
+  rasa:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
           cache: 'pip'
-      - run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - run: |
+      - name: Cache Rasa artifacts
+        uses: actions/cache@v4
+        with:
+          path: .rasa
+          key: ${{ runner.os }}-rasa-${{ hashFiles('config.yml', 'domain.yml', 'data/**/*.yml') }}
+      - name: Detect changes (Rasa-related)
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            rasa:
+              - 'data/**'
+              - 'config.yml'
+              - 'domain.yml'
+              - 'actions.py'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install rasa~=3.6 pytest~=7.4; fi
+      - name: Validate Rasa data
+        run: |
+          python -m rasa data validate
+      - name: Test NLU
+        run: |
+          mkdir -p reports
+          python -m rasa test nlu --nlu tests/test_nlu.yml --out reports
+      - name: Quality gate (macro F1 >= 0.85)
+        env:
+          THRESHOLD: '0.85'
+        run: |
+          python scripts/ci_nlu_summary.py --reports reports
+      - name: Train Rasa model
+        if: >
+          github.ref == 'refs/heads/main' ||
+          (github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'train-model')) ||
+          steps.changes.outputs.rasa == 'true'
+        timeout-minutes: 15
+        run: |
+          mkdir -p models
+          python -m rasa train --fixed-model-name model
+      - name: Upload trained model
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rasa-trained-model
+          path: models/*.tar.gz
+      - name: Upload NLU reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rasa-nlu-reports
+          path: reports
+      - name: Run pytest (optional)
+        run: |
           if command -v pytest >/dev/null 2>&1; then pytest -q; else echo "pytest not found, skipping tests"; fi

@@ -1,0 +1,17 @@
+version: "3.1"
+
+nlu:
+- intent: saludo
+  examples: |
+    - hola
+    - buen día
+
+- intent: despedida
+  examples: |
+    - chau
+    - adiós
+
+- intent: cotizar_producto
+  examples: |
+    - quiero cotizar remera
+    - necesito precio de zapatillas SKU-123

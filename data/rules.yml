@@ -1,0 +1,27 @@
+version: "3.1"
+
+rules:
+- rule: responder saludo
+  steps:
+    - intent: saludo
+    - action: utter_saludo
+
+- rule: responder despedida
+  steps:
+    - intent: despedida
+    - action: utter_despedida
+
+- rule: activar cotizacion form
+  steps:
+    - intent: cotizar_producto
+    - action: cotizacion_form
+    - active_loop: cotizacion_form
+
+- rule: enviar al completar form
+  condition:
+    - active_loop: cotizacion_form
+  steps:
+    - action: cotizacion_form
+    - active_loop: null
+    - action: action_cotizar
+    - action: action_register_quote

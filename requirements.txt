@@ -1,0 +1,5 @@
+# Runtime and tooling
+rasa~=3.6
+pytest~=7.4
+requests>=2.31.0
+psycopg2-binary>=2.9
