@@ -1,0 +1,64 @@
+{
+  "report_version": "1.0",
+  "timestamp": "2025-11-01T22:23:01.468812+00:00",
+  "since_commit": null,
+  "until_commit": "984a677b1861c5ad47d9049e6a73943fa148ce99",
+  "highlights": [
+    "1 files changed since last run",
+    "Macro F1 current: 1.00"
+  ],
+  "changes": {
+    "commits": [
+      {
+        "sha": "984a677b1861c5ad47d9049e6a73943fa148ce99",
+        "subject": "docs: update project status - critical blockers resolved"
+      },
+      {
+        "sha": "841fe498a0876a3d04d0da48c0ffa3002793be93",
+        "subject": "fix: resolve Rasa training conflicts and add benchmark tooling"
+      },
+      {
+        "sha": "ca3b75f7bfd0abe02e48a54fa35eae93f7003b8c",
+        "subject": "docs: actualizar README con sección CI y formateo"
+      },
+      {
+        "sha": "6cc5c4d07e0671461042c2228b92f04d503e0877",
+        "subject": "feat: sincronizar configuración Rasa 3 y datos NLU en español"
+      },
+      {
+        "sha": "5f665aaabf9945505f231be88827f952a039c7cf",
+        "subject": "chore: add CI workflow, CODEOWNERS and PR template"
+      },
+      {
+        "sha": "c5476ad7374d8a5cb58eeabc34bc134d9b426d4d",
+        "subject": "Merge pull request #1 from matiasportugau-ui/codespace-hallowed-ghost-974xr55x9wgr29xg6"
+      },
+      {
+        "sha": "f0b6c8d09e67287359c3480aae11090c19ab251f",
+        "subject": "Add initial implementation of product collection with configuration and storage files"
+      },
+      {
+        "sha": "d8b750b0a67daa4f75a1ef88b1b342932f1db9b2",
+        "subject": "Add files via upload"
+      },
+      {
+        "sha": "e4dc014b618d3d665a5ba90036091d8bc06c27b9",
+        "subject": "Add files via upload"
+      },
+      {
+        "sha": "270005def4d3cf391cf6258f11d83a897ac4e3e2",
+        "subject": "Add launch configurations and extensions recommendations for Edge DevTools"
+      }
+    ],
+    "files_modified": [
+      "docs/STATUS_PROYECTO.md"
+    ]
+  },
+  "ci": {
+    "macro_f1": 1.0,
+    "quality_gate": "pass"
+  },
+  "next_steps": [
+    "Review E1 tasks: n8n integration, metrics, background agents"
+  ]
+}

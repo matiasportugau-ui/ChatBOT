@@ -1,0 +1,28 @@
+{
+  "report_version": "1.0",
+  "timestamp": "2025-11-01T22:27:13.289613+00:00",
+  "since_commit": "984a677b1861c5ad47d9049e6a73943fa148ce99",
+  "until_commit": "5c6ea7de76813ab5c3f4c6b911c24ebe633e6fa9",
+  "highlights": [
+    "1 files changed since last run",
+    "Macro F1 current: 1.00"
+  ],
+  "changes": {
+    "commits": [
+      {
+        "sha": "5c6ea7de76813ab5c3f4c6b911c24ebe633e6fa9",
+        "subject": "chore(vscode): configure ShellCheck for shell script linting"
+      }
+    ],
+    "files_modified": [
+      ".vscode/settings.json"
+    ]
+  },
+  "ci": {
+    "macro_f1": 1.0,
+    "quality_gate": "pass"
+  },
+  "next_steps": [
+    "Review E1 tasks: n8n integration, metrics, background agents"
+  ]
+}

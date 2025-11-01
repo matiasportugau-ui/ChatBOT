@@ -1,0 +1,114 @@
+[
+  {
+    "text": "hola",
+    "intent": "saludo",
+    "intent_prediction": {
+      "name": "greet",
+      "confidence": 1.0
+    }
+  },
+  {
+    "text": "buenas",
+    "intent": "saludo",
+    "intent_prediction": {
+      "name": "goodbye",
+      "confidence": 0.5883641242980957
+    }
+  },
+  {
+    "text": "buen día",
+    "intent": "saludo",
+    "intent_prediction": {
+      "name": "inform",
+      "confidence": 0.9972186088562012
+    }
+  },
+  {
+    "text": "qué tal",
+    "intent": "saludo",
+    "intent_prediction": {
+      "name": "greet",
+      "confidence": 1.0
+    }
+  },
+  {
+    "text": "buenos días",
+    "intent": "saludo",
+    "intent_prediction": {
+      "name": "greet",
+      "confidence": 1.0
+    }
+  },
+  {
+    "text": "chau",
+    "intent": "despedida",
+    "intent_prediction": {
+      "name": "goodbye",
+      "confidence": 0.9999994039535522
+    }
+  },
+  {
+    "text": "adiós",
+    "intent": "despedida",
+    "intent_prediction": {
+      "name": "goodbye",
+      "confidence": 0.9999973773956299
+    }
+  },
+  {
+    "text": "nos vemos",
+    "intent": "despedida",
+    "intent_prediction": {
+      "name": "inform",
+      "confidence": 0.9972186088562012
+    }
+  },
+  {
+    "text": "hasta luego",
+    "intent": "despedida",
+    "intent_prediction": {
+      "name": "goodbye",
+      "confidence": 1.0
+    }
+  },
+  {
+    "text": "quiero cotizar remera",
+    "intent": "cotizar_producto",
+    "intent_prediction": {
+      "name": "inform",
+      "confidence": 1.0
+    }
+  },
+  {
+    "text": "necesito precio de zapatillas SKU-123",
+    "intent": "cotizar_producto",
+    "intent_prediction": {
+      "name": "inform",
+      "confidence": 0.9995631575584412
+    }
+  },
+  {
+    "text": "cotizame 3 gorras",
+    "intent": "cotizar_producto",
+    "intent_prediction": {
+      "name": "inform",
+      "confidence": 0.9974209070205688
+    }
+  },
+  {
+    "text": "precio de buzo",
+    "intent": "cotizar_producto",
+    "intent_prediction": {
+      "name": "inform",
+      "confidence": 0.9994743466377258
+    }
+  },
+  {
+    "text": "cuánto sale campera talle L",
+    "intent": "cotizar_producto",
+    "intent_prediction": {
+      "name": "inform",
+      "confidence": 0.9994975328445435
+    }
+  }
+]
