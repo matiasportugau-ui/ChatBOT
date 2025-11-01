@@ -1,6 +1,7 @@
 # AUTO-ATC Playbook v3 (Self-hosted)
 
 ## Estructura
+
 - docker-compose.yml
 - .env.chatwoot, .env.n8n
 - scripts/provision_chatwoot.sh
@@ -10,6 +11,7 @@
 - whatsapp/template_cotizacion_inicial.json
 
 ## Pasos rápidos
+
 1. `docker compose up -d`
 2. Configura Chatwoot y ejecuta `scripts/provision_chatwoot.sh` (exporta variables .env.chatwoot antes).
 3. Importa los 4 workflows en n8n y ajusta credenciales/URLs `{PLACEHOLDER}`.
@@ -18,8 +20,17 @@
 6. Define templates WhatsApp y prueba caso fuera de 24h.
 
 ## Notas
+
 - Sustituye `{PLACEHOLDER}` por tus valores reales.
 - Cada archivo contiene **EXPORT_SEAL v1**.
+
+## CI (Calidad NLU)
+
+En CI, existe un quality gate que analiza el reporte de pruebas NLU y falla si el Macro F1 cae por debajo de 0.85.
+
+- Script: `scripts/ci_nlu_summary.py`
+- Umbral configurable: variable `THRESHOLD` en el workflow de GitHub Actions
+- Artefactos: los reportes se publican desde `reports/` y el modelo entrenado se adjunta como artifact
 
 <!-- EXPORT_SEAL v1 -->
 <!-- project: auto-atc -->
