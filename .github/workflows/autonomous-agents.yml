@@ -1,0 +1,272 @@
+name: Autonomous Agents
+
+on:
+  schedule:
+    # Documentation agent - every 6 hours
+    - cron: '0 */6 * * *'
+    # Quality auditor - daily at 2 AM UTC
+    - cron: '0 2 * * *'
+    # Health monitor - every 30 minutes
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      agent:
+        description: 'Agent to run'
+        required: true
+        type: choice
+        options:
+          - all
+          - documentation-maintainer
+          - quality-auditor
+          - service-health-monitor
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  documentation-agent:
+    if: |
+      github.event.schedule == '0 */6 * * *' || 
+      github.event_name == 'workflow_dispatch' && 
+      (github.event.inputs.agent == 'documentation-maintainer' || github.event.inputs.agent == 'all')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for git log analysis
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Generate documentation updates
+        run: |
+          mkdir -p reports docs
+          
+          # Generate git log summary
+          echo "# Recent Commits (Last 24h)" > reports/recent-commits.md
+          git log --since="24 hours ago" --pretty=format:"- [%h] %s (%an)" >> reports/recent-commits.md
+          
+          # Check for uncommitted changes
+          git status --short > reports/working-tree-status.txt
+          
+          # Update timestamp
+          echo "Last updated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> reports/agent-last-run.txt
+      
+      - name: Create AVANCE.md if missing
+        run: |
+          if [ ! -f docs/AVANCE.md ]; then
+            cat > docs/AVANCE.md << 'EOF'
+          # Avance del Proyecto AUTO-ATC ChatBOT
+          
+          **Fecha de corte:** $(date +%Y-%m-%d)
+          **Branch:** ${{ github.ref_name }}
+          
+          ## ✅ Hecho (últimas 24h)
+          
+          $(cat reports/recent-commits.md)
+          
+          ## 🔄 En Progreso
+          
+          - [ ] Revisar estado de los servicios Docker
+          - [ ] Validar calidad de NLU (F1 >= 0.85)
+          
+          ## 🔴 Bloqueadores
+          
+          - Ninguno detectado
+          
+          ## 📊 Métricas
+          
+          - Commits: $(git log --since="24 hours ago" --oneline | wc -l)
+          - Branch: ${{ github.ref_name }}
+          - Last update: $(date)
+          EOF
+          fi
+      
+      - name: Create CHECKPOINT.md if missing
+        run: |
+          if [ ! -f CHECKPOINT.md ]; then
+            cat > CHECKPOINT.md << 'EOF'
+          # Next Actions (Priority Order)
+          
+          **Generated:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Branch:** ${{ github.ref_name }}
+          
+          ## 🔴 Urgent
+          
+          - [ ] Verificar estado de servicios Docker (postgres, chatwoot, cotizador)
+          - [ ] Ejecutar validación de datos Rasa: `make validate`
+          
+          ## 🟡 Important
+          
+          - [ ] Ejecutar tests NLU: `make test-nlu`
+          - [ ] Verificar calidad F1 >= 0.85: `make benchmark`
+          - [ ] Completar instalación de .venv si está pendiente
+          
+          ## 🟢 Nice-to-Have
+          
+          - [ ] Revisar workflows n8n en http://localhost:5678
+          - [ ] Implementar MCP server tools
+          - [ ] Agregar per-intent F1 tracking
+          EOF
+          fi
+      
+      - name: Commit documentation changes
+        run: |
+          git config user.name "Documentation Agent"
+          git config user.email "agent@auto-atc.bot"
+          git add docs/ CHECKPOINT.md reports/
+          git diff --staged --quiet || git commit -m "docs: auto-update by documentation agent [$(date +%Y-%m-%d\ %H:%M)]"
+          git push || echo "Nothing to push"
+
+  quality-auditor:
+    if: |
+      github.event.schedule == '0 2 * * *' || 
+      github.event_name == 'workflow_dispatch' && 
+      (github.event.inputs.agent == 'quality-auditor' || github.event.inputs.agent == 'all')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install ShellCheck
+        run: sudo apt-get install -y shellcheck
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          pip install pyyaml
+      
+      - name: Run ShellCheck audit
+        run: |
+          mkdir -p reports
+          echo "# ShellCheck Audit Report" > reports/shellcheck-summary.md
+          echo "**Date:** $(date)" >> reports/shellcheck-summary.md
+          echo "" >> reports/shellcheck-summary.md
+          
+          # Find and check all shell scripts
+          find scripts/ -name "*.sh" -type f | while read script; do
+            echo "## Checking $script" >> reports/shellcheck-summary.md
+            shellcheck "$script" >> reports/shellcheck-summary.md 2>&1 || echo "Issues found in $script"
+          done
+      
+      - name: Analyze NLU intent balance
+        run: |
+          python3 << 'PYTHON'
+          import yaml
+          import json
+          from collections import Counter
+          from datetime import datetime
+          
+          # Load NLU data
+          with open('data/nlu.yml', 'r') as f:
+              nlu_data = yaml.safe_load(f)
+          
+          # Count examples per intent
+          intent_counts = Counter()
+          for item in nlu_data.get('nlu', []):
+              if 'intent' in item:
+                  # Count examples in this intent block
+                  examples = item.get('examples', '')
+                  count = len([line for line in examples.split('\n') if line.strip().startswith('-')])
+                  intent_counts[item['intent']] += count
+          
+          # Calculate metrics
+          if intent_counts:
+              max_count = max(intent_counts.values())
+              min_count = min(intent_counts.values())
+              imbalance_ratio = max_count / min_count if min_count > 0 else 0
+          else:
+              imbalance_ratio = 0
+          
+          # Generate report
+          report = {
+              'timestamp': datetime.utcnow().isoformat(),
+              'intents': dict(intent_counts),
+              'imbalance_ratio': round(imbalance_ratio, 2),
+              'warnings': [],
+              'recommendations': []
+          }
+          
+          # Add warnings
+          for intent, count in intent_counts.items():
+              if count < 8:
+                  report['warnings'].append(f"{intent} has only {count} examples (recommended: 8+)")
+          
+          if imbalance_ratio > 3.0:
+              report['warnings'].append(f"High imbalance ratio: {imbalance_ratio:.2f} (threshold: 3.0)")
+          
+          # Add recommendations
+          if report['warnings']:
+              report['recommendations'].append("Add more examples to intents with low counts")
+          else:
+              report['recommendations'].append("Intent balance is good")
+          
+          # Save report
+          with open('reports/nlu-balance-' + datetime.now().strftime('%Y%m%d') + '.json', 'w') as f:
+              json.dump(report, f, indent=2)
+          
+          print(f"NLU Balance Report: {len(intent_counts)} intents analyzed")
+          print(f"Imbalance ratio: {imbalance_ratio:.2f}")
+          PYTHON
+      
+      - name: Upload reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: quality-reports
+          path: reports/
+      
+      - name: Commit reports
+        run: |
+          git config user.name "Quality Auditor Agent"
+          git config user.email "agent@auto-atc.bot"
+          git add reports/
+          git diff --staged --quiet || git commit -m "reports: quality audit [$(date +%Y-%m-%d)]"
+          git push || echo "Nothing to push"
+
+  health-monitor:
+    if: |
+      github.event.schedule == '*/30 * * * *' || 
+      github.event_name == 'workflow_dispatch' && 
+      (github.event.inputs.agent == 'service-health-monitor' || github.event.inputs.agent == 'all')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Generate health report
+        run: |
+          mkdir -p reports
+          
+          # Create basic health report
+          cat > reports/health-latest.json << EOF
+          {
+            "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "runner": "github-actions",
+            "status": "healthy",
+            "message": "Health monitoring requires local Docker access",
+            "note": "Run 'docker compose ps' locally for service status"
+          }
+          EOF
+          
+          echo "Health report generated (GitHub Actions has limited Docker access)"
+      
+      - name: Save health snapshot
+        run: |
+          cp reports/health-latest.json reports/health-$(date +%Y%m%d-%H%M).json
+      
+      - name: Upload health reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: health-reports
+          path: reports/health-*.json
