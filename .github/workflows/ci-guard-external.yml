@@ -1,0 +1,23 @@
+name: CI Guard - External Compose
+
+on:
+  push: {}
+  pull_request: {}
+
+jobs:
+  validate-external:
+    name: Validate EXTERNAL_DATA_PATH
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run external-data validation
+        env:
+          EXTERNAL_DATA_PATH: ${{ secrets.EXTERNAL_DATA_PATH }}
+        run: |
+          chmod +x ./scripts/ci_validate_external.sh
+          ./scripts/ci_validate_external.sh
+
+      - name: Note
+        run: echo "If this job fails, set the secret EXTERNAL_DATA_PATH in repository secrets or avoid running external-mounted compose in CI."
