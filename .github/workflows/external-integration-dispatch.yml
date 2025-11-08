@@ -1,0 +1,49 @@
+name: External Integration (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      external_data_path:
+        description: 'Path to external data on the self-hosted runner'
+        required: true
+        type: string
+      run_compose:
+        description: 'Set to true to actually run docker compose after validation (only on self-hosted runners)'
+        required: false
+        default: 'false'
+
+jobs:
+  run-on-self-hosted:
+    name: Validate and (optionally) run external compose on self-hosted runner
+    # MUST run on a self-hosted runner that has the external mount available.
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure guard is explicit
+        env:
+          ALLOW_EXTERNAL_COMPOSE: ${{ secrets.ALLOW_EXTERNAL_COMPOSE }}
+        run: |
+          if [ "${ALLOW_EXTERNAL_COMPOSE:-}" != "true" ]; then
+            echo "Repository secret ALLOW_EXTERNAL_COMPOSE is not set to 'true'. Aborting to avoid accidental external-compose runs."
+            exit 1
+          fi
+
+      - name: Validate external path on runner
+        env:
+          EXTERNAL_DATA_PATH: ${{ github.event.inputs.external_data_path }}
+        run: |
+          chmod +x ./scripts/ci_validate_external.sh || true
+          ./scripts/ci_validate_external.sh
+
+      - name: Optionally run docker compose (manual override)
+        if: ${{ github.event.inputs.run_compose == 'true' }}
+        env:
+          EXTERNAL_DATA_PATH: ${{ github.event.inputs.external_data_path }}
+        run: |
+          echo "Running docker compose with external mounts..."
+          docker compose -f docker-compose.yml -f docker-compose.external.yml up -d
+
+      - name: Done
+        run: echo "External integration job completed. If compose was not run, re-run with run_compose=true on a prepared self-hosted runner."
