@@ -1,0 +1,84 @@
+{
+  "messaging_product": "whatsapp",
+  "recipient_type": "individual",
+  "to": "{{TO_MSISDN}}",
+  "type": "template",
+  "template": {
+    "name": "cotizacion_inicial",
+    "language": {
+      "code": "es",
+      "policy": "deterministic"
+    },
+    "components": [
+      {
+        "type": "header",
+        "parameters": [
+          {
+            "type": "text",
+            "text": "AUTO-ATC Cotización #{{QUOTE_ID}}"
+          }
+        ]
+      },
+      {
+        "type": "body",
+        "parameters": [
+          {
+            "type": "text",
+            "text": "{{NOMBRE}}"
+          },
+          {
+            "type": "text",
+            "text": "{{PRODUCTO}}"
+          },
+          {
+            "type": "text",
+            "text": "{{CANTIDAD}}"
+          },
+          {
+            "type": "text",
+            "text": "{{PRECIO_ESTIMADO}}"
+          }
+        ]
+      },
+      {
+        "type": "footer",
+        "parameters": [
+          {
+            "type": "text",
+            "text": "Válida por 7 días - AUTO-ATC"
+          }
+        ]
+      }
+    ]
+  },
+  "metadata": {
+    "description": "Template de cotización inicial para WhatsApp Business API",
+    "variables": {
+      "TO_MSISDN": "Número de teléfono del destinatario (formato internacional sin +)",
+      "QUOTE_ID": "ID único de la cotización",
+      "NOMBRE": "Nombre del cliente",
+      "PRODUCTO": "Nombre del producto solicitado",
+      "CANTIDAD": "Cantidad solicitada",
+      "PRECIO_ESTIMADO": "Precio estimado formateado"
+    },
+    "validation_rules": {
+      "TO_MSISDN": "Debe ser numérico, 10-15 dígitos",
+      "QUOTE_ID": "Numérico positivo",
+      "NOMBRE": "Texto, máximo 50 caracteres",
+      "PRODUCTO": "Texto, máximo 100 caracteres",
+      "CANTIDAD": "Numérico positivo",
+      "PRECIO_ESTIMADO": "Formato moneda (ej: $1,299.00)"
+    }
+  },
+  "export_seal": {
+    "project": "auto-atc",
+    "prompt_id": "wa_template_cotizacion_inicial_v2",
+    "version": "3.1.0",
+    "file": "whatsapp/template_cotizacion_inicial.json",
+    "lang": "json",
+    "created_at": "2025-11-08T00:00:00Z",
+    "author": "auto-atc-setup",
+    "origin": "whatsapp-template-enhanced",
+    "body_sha256": "enhanced_template_hash_placeholder"
+  }
+}

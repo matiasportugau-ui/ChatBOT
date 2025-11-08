@@ -1,0 +1,219 @@
+version: "3.1"
+
+# ==========================================
+# INTENTS Y ENTITIES
+# ==========================================
+
+intents:
+  - greet
+  - goodbye
+  - affirm
+  - deny
+  - mood_great
+  - mood_unhappy
+  - bot_challenge
+  - cotizar_producto
+  - buscar_producto
+  - pedir_informacion
+  - horario_atencion
+  - fallback
+  - out_of_scope
+
+entities:
+  - producto
+  - sku
+  - cantidad
+  - email
+  - telefono
+  - precio
+  - categoria
+
+# ==========================================
+# SLOTS
+# ==========================================
+
+slots:
+  producto:
+    type: text
+    influence_conversation: true
+    mappings:
+    - type: from_entity
+      entity: producto
+
+  sku:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: sku
+
+  cantidad:
+    type: float
+    min_value: 1
+    max_value: 1000
+    mappings:
+    - type: from_entity
+      entity: cantidad
+
+  email:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: email
+
+  telefono:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: telefono
+
+  precio:
+    type: float
+    mappings:
+    - type: from_entity
+      entity: precio
+
+  categoria:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: categoria
+
+  business_hours:
+    type: bool
+    mappings:
+    - type: from_entity
+      entity: business_hours
+
+  search_results:
+    type: list
+    mappings:
+    - type: custom
+
+# ==========================================
+# FORMS
+# ==========================================
+
+forms:
+  cotizacion_form:
+    required_slots:
+      - producto
+    optional_slots:
+      - sku
+      - cantidad
+      - email
+      - telefono
+
+# ==========================================
+# RESPONSES
+# ==========================================
+
+responses:
+  utter_greet:
+    - text: "¡Hola! Soy el asistente virtual de AUTO-ATC. ¿En qué puedo ayudarte hoy?"
+
+  utter_goodbye:
+    - text: "¡Gracias por contactarnos! Que tengas un excelente día."
+    - text: "¡Hasta luego! No dudes en volver cuando necesites ayuda."
+
+  utter_mood_great:
+    - text: "¡Me alegra escuchar eso! ¿En qué puedo ayudarte?"
+    - text: "¡Excelente! Estoy aquí para asistirte."
+
+  utter_mood_unhappy:
+    - text: "Lamento escuchar eso. ¿Hay algo en lo que pueda ayudarte?"
+    - text: "Lo siento. Cuéntame qué puedo hacer para mejorar tu experiencia."
+
+  utter_bot_challenge:
+    - text: "Soy un asistente virtual creado para ayudarte con cotizaciones y consultas sobre nuestros productos."
+
+  utter_ask_producto:
+    - text: "¿Qué producto te interesa cotizar?"
+    - text: "¿Qué producto deseas consultar?"
+    - text: "¿Cuál es el producto que buscas?"
+
+  utter_ask_sku:
+    - text: "¿Tienes algún código SKU específico o variante (color, talla, modelo)?"
+    - text: "¿Necesitas alguna variante específica del producto?"
+
+  utter_ask_cantidad:
+    - text: "¿Qué cantidad necesitas?"
+    - text: "¿Cuántas unidades deseas?"
+
+  utter_ask_email:
+    - text: "¿Cuál es tu email para enviarte la cotización?"
+    - text: "¿Me puedes proporcionar tu email?"
+
+  utter_ask_telefono:
+    - text: "¿Cuál es tu número de teléfono?"
+    - text: "¿Me puedes dar tu teléfono de contacto?"
+
+  utter_submit:
+    - text: "¡Gracias! Estoy registrando tu solicitud de cotización."
+    - text: "Perfecto, registré tu consulta. Te contactaremos pronto."
+
+  utter_horario_atencion:
+    - text: "Nuestro horario de atención es de lunes a viernes de 9:00 a 18:00 hs."
+    - text: "Atendemos de lunes a viernes, desde las 9:00 hasta las 18:00."
+
+  utter_fallback:
+    - text: "Lo siento, no entendí tu mensaje. ¿Podrías reformularlo?"
+    - text: "Disculpa, no comprendí. ¿Puedes decirlo de otra manera?"
+    - text: "¿Podrías ser más específico? No entendí tu consulta."
+
+  utter_out_of_scope:
+    - text: "Lo siento, esa consulta está fuera de mi alcance. ¿Te puedo ayudar con cotizaciones o información de productos?"
+    - text: "Esa pregunta está fuera de mis funciones. ¿Necesitas ayuda con algún producto o cotización?"
+
+  utter_informacion_general:
+    - text: "Somos AUTO-ATC, especialistas en soluciones tecnológicas. ¿Qué tipo de producto te interesa?"
+    - text: "Ofrecemos una amplia gama de productos tecnológicos. ¿Qué estás buscando específicamente?"
+
+  utter_pedir_mas_informacion:
+    - text: "¿Te gustaría que te proporcione más información sobre algún producto específico?"
+    - text: "¿Necesitas detalles adicionales sobre algún artículo?"
+
+# ==========================================
+# ACTIONS
+# ==========================================
+
+actions:
+  - action_greet
+  - action_check_business_hours
+  - action_search_product
+  - action_register_quote
+  - action_fallback
+  - utter_greet
+  - utter_goodbye
+  - utter_mood_great
+  - utter_mood_unhappy
+  - utter_bot_challenge
+  - utter_ask_producto
+  - utter_ask_sku
+  - utter_ask_cantidad
+  - utter_ask_email
+  - utter_ask_telefono
+  - utter_submit
+  - utter_horario_atencion
+  - utter_fallback
+  - utter_out_of_scope
+  - utter_informacion_general
+  - utter_pedir_mas_informacion
+
+# ==========================================
+# SESSION CONFIG
+# ==========================================
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true
+
+# EXPORT_SEAL v1
+# project: auto-atc
+# prompt_id: rasa-domain-v3
+# version: 3.0.0
+# file: rasa/domain.yml
+# lang: yaml
+# created_at: 2025-10-31T00:10:55Z
+# author: GPT-5 Thinking
+# origin: rasa-spec
+# body_sha256: 56b31da1aed9dfe1724e752877a354b45debd1e20d04b9a2acc32f7f17532ce1

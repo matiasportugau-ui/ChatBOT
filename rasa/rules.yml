@@ -1,0 +1,166 @@
+version: "3.1"
+
+# ==========================================
+# BUSINESS LOGIC RULES
+# ==========================================
+
+rules:
+
+# Saludos y horario laboral
+- rule: greet user
+  steps:
+  - intent: greet
+  - action: action_greet
+
+- rule: check business hours
+  steps:
+  - intent: horario_atencion
+  - action: utter_horario_atencion
+
+- rule: check business hours implicitly
+  steps:
+  - intent: greet
+  - action: action_check_business_hours
+
+# Flujo de cotización
+- rule: activar cotizacion form
+  steps:
+  - intent: cotizar_producto
+  - action: cotizacion_form
+  - active_loop: cotizacion_form
+
+- rule: enviar al completar form
+  condition:
+  - active_loop: cotizacion_form
+  steps:
+  - action: cotizacion_form
+  - active_loop: null
+  - action: action_register_quote
+
+# Búsqueda de productos
+- rule: buscar producto
+  steps:
+  - intent: buscar_producto
+  - action: action_search_product
+
+# Información general
+- rule: pedir informacion general
+  steps:
+  - intent: pedir_informacion
+  - action: utter_informacion_general
+
+# Despedidas
+- rule: despedida
+  steps:
+  - intent: goodbye
+  - action: utter_goodbye
+
+# Estados de ánimo
+- rule: estado de animo positivo
+  steps:
+  - intent: mood_great
+  - action: utter_mood_great
+
+- rule: estado de animo negativo
+  steps:
+  - intent: mood_unhappy
+  - action: utter_mood_unhappy
+
+# Desafío del bot
+- rule: desafio del bot
+  steps:
+  - intent: bot_challenge
+  - action: utter_bot_challenge
+
+# ==========================================
+# FALLBACK RULES
+# ==========================================
+
+# Fallback para intents no reconocidos
+- rule: fallback any
+  steps:
+  - intent: nlu_fallback
+  - action: action_fallback
+
+# Out of scope
+- rule: out of scope
+  steps:
+  - intent: out_of_scope
+  - action: utter_out_of_scope
+
+# Manejo de mensajes no entendidos
+- rule: manejo fallback general
+  steps:
+  - intent: fallback
+  - action: utter_fallback
+
+# ==========================================
+# CONVERSATION REPAIR
+# ==========================================
+
+# Si el usuario confirma después de una corrección
+- rule: afirmacion despues de correccion
+  steps:
+  - intent: affirm
+  - action: utter_pedir_mas_informacion
+
+# Si el usuario niega después de una confirmación
+- rule: negacion despues de confirmacion
+  steps:
+  - intent: deny
+  - action: utter_goodbye
+
+# ==========================================
+# BUSINESS HOURS HANDLING
+# ==========================================
+
+# Fuera de horario - ofrecer dejar mensaje
+- rule: fuera de horario - saludo
+  condition:
+  - slot_was_set:
+    - business_hours: false
+  steps:
+  - intent: greet
+  - action: utter_horario_atencion
+  - action: utter_pedir_mas_informacion
+
+# En horario laboral - respuesta normal
+- rule: en horario - saludo
+  condition:
+  - slot_was_set:
+    - business_hours: true
+  steps:
+  - intent: greet
+  - action: utter_greet
+
+# ==========================================
+# ERROR RECOVERY
+# ==========================================
+
+# Si hay un error en el formulario, pedir información de nuevo
+- rule: error en formulario - producto
+  condition:
+  - active_loop: cotizacion_form
+  - slot_was_set:
+    - producto: null
+  steps:
+  - action: utter_ask_producto
+
+- rule: error en formulario - cantidad
+  condition:
+  - active_loop: cotizacion_form
+  - slot_was_set:
+    - cantidad: null
+  steps:
+  - action: utter_ask_cantidad
+
+# EXPORT_SEAL v1
+# project: auto-atc
+# prompt_id: rasa-rules-v3
+# version: 3.0.0
+# file: rasa/rules.yml
+# lang: yaml
+# created_at: 2025-10-31T00:10:55Z
+# author: GPT-5 Thinking
+# origin: rasa-spec
+# body_sha256: e11981ea05e186a1d36eed79b1b0dcdaa783ff9f86c406af7cdde727389f30e8

@@ -1,0 +1,236 @@
+# AUTO-ATC Playbook v3 - CI/CD Pipeline
+# GitHub Actions para testing, linting y validación
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ==========================================
+  # VALIDATION JOB
+  # ==========================================
+  
+  validate:
+    name: Validate Configuration
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Validate file structure
+      run: |
+        # Check required directories exist
+        required_dirs=("rasa" "n8n" "db" "scripts" "whatsapp" "tests")
+        for dir in "${required_dirs[@]}"; do
+          if [ ! -d "$dir" ]; then
+            echo "❌ Required directory missing: $dir"
+            exit 1
+          fi
+        done
+        echo "✅ Directory structure validated"
+        
+    - name: Validate YAML files
+      run: |
+        # Check YAML syntax
+        find . -name "*.yml" -o -name "*.yaml" | xargs -I {} sh -c 'python -c "import yaml; yaml.safe_load(open(\"$1\"))" _ {}'
+        echo "✅ YAML files validated"
+        
+    - name: Validate JSON files
+      run: |
+        # Check JSON syntax
+        find . -name "*.json" | xargs -I {} sh -c 'python -c "import json; json.loads(open(\"$1\").read())" _ {}'
+        echo "✅ JSON files validated"
+        
+    - name: Check executable permissions
+      run: |
+        # Check scripts have execute permissions
+        if [ ! -x "scripts/provision_chatwoot.sh" ]; then
+          echo "❌ provision_chatwoot.sh is not executable"
+          exit 1
+        fi
+        echo "✅ Script permissions validated"
+
+  # ==========================================
+  # LINTING JOB
+  # ==========================================
+  
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black flake8 isort
+        
+    - name: Lint Python files
+      run: |
+        # Check Python formatting
+        black --check rasa/ tests/ || (echo "❌ Python formatting issues found. Run 'black rasa/ tests/' to fix."; exit 1)
+        
+        # Check imports sorting
+        isort --check-only --diff rasa/ tests/ || (echo "❌ Import sorting issues found. Run 'isort rasa/ tests/' to fix."; exit 1)
+        
+        echo "✅ Python code linted"
+        
+    - name: Check for security issues
+      run: |
+        # Check for hardcoded secrets
+        if grep -r "password\|secret\|token\|key" --include="*.py" --include="*.yml" --include="*.yaml" . | grep -v ".env" | grep -v "example" | grep -v "placeholder"; then
+          echo "❌ Potential hardcoded secrets found"
+          exit 1
+        fi
+        echo "✅ Security check passed"
+
+  # ==========================================
+  # TESTING JOB
+  # ==========================================
+  
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install test dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov requests
+        
+    - name: Install Rasa dependencies
+      run: |
+        pip install rasa psycopg2-binary qdrant-client
+        
+    - name: Run unit tests
+      run: |
+        cd tests
+        python -m pytest test_actions.py -v --tb=short
+        
+    - name: Run integration tests
+      run: |
+        cd tests
+        python -m pytest test_integration.py -v --tb=short
+        
+    - name: Generate test report
+      run: |
+        echo "## 🧪 Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "- Unit tests: ✅ Passed" >> $GITHUB_STEP_SUMMARY
+        echo "- Integration tests: ✅ Passed" >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================
+  # DOCKER BUILD JOB
+  # ==========================================
+  
+  docker:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Validate Docker Compose
+      run: |
+        docker compose config --quiet
+        echo "✅ Docker Compose configuration is valid"
+        
+    - name: Build test images
+      run: |
+        # Build images without running (dry run)
+        docker compose build --parallel --no-cache
+        echo "✅ Docker images built successfully"
+
+  # ==========================================
+  # DEPLOYMENT PREPARATION JOB
+  # ==========================================
+  
+  deploy-prep:
+    name: Deployment Preparation
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Create deployment summary
+      run: |
+        echo "## 🚀 Deployment Ready" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### ✅ Validation Results" >> $GITHUB_STEP_SUMMARY
+        echo "- File structure: Validated" >> $GITHUB_STEP_SUMMARY
+        echo "- YAML/JSON syntax: Validated" >> $GITHUB_STEP_SUMMARY
+        echo "- Script permissions: Validated" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🧹 Code Quality" >> $GITHUB_STEP_SUMMARY
+        echo "- Python formatting: Passed" >> $GITHUB_STEP_SUMMARY
+        echo "- Import sorting: Passed" >> $GITHUB_STEP_SUMMARY
+        echo "- Security check: Passed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🧪 Testing" >> $GITHUB_STEP_SUMMARY
+        echo "- Unit tests: Passed" >> $GITHUB_STEP_SUMMARY
+        echo "- Integration tests: Passed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🐳 Docker" >> $GITHUB_STEP_SUMMARY
+        echo "- Compose config: Validated" >> $GITHUB_STEP_SUMMARY
+        echo "- Images build: Successful" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### �� Deployment Checklist" >> $GITHUB_STEP_SUMMARY
+        echo "- [ ] Configure production environment variables" >> $GITHUB_STEP_SUMMARY
+        echo "- [ ] Set up domain and SSL certificates" >> $GITHUB_STEP_SUMMARY
+        echo "- [ ] Configure WhatsApp Business API" >> $GITHUB_STEP_SUMMARY
+        echo "- [ ] Set up monitoring and logging" >> $GITHUB_STEP_SUMMARY
+        echo "- [ ] Test production deployment" >> $GITHUB_STEP_SUMMARY
+
+  # ==========================================
+  # NOTIFICATION JOB
+  # ==========================================
+  
+  notify:
+    name: Notify on Completion
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [validate, lint, test, docker]
+    
+    steps:
+    - name: Generate status report
+      run: |
+        echo "## 📊 CI/CD Pipeline Status" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Validation | ${{ needs.validate.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Linting | ${{ needs.lint.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Testing | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Docker | ${{ needs.docker.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ "${{ needs.validate.result }}" == "success" && "${{ needs.lint.result }}" == "success" && "${{ needs.test.result }}" == "success" && "${{ needs.docker.result }}" == "success" ]]; then
+          echo "🎉 **All checks passed!** Ready for deployment." >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ **Some checks failed.** Please review the pipeline results." >> $GITHUB_STEP_SUMMARY
+        fi

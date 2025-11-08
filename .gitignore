@@ -1,0 +1,204 @@
+# AUTO-ATC Playbook v3 - .gitignore
+# Configuración de seguridad y archivos no versionados
+
+# ==========================================
+# ENVIRONMENT & SECRETS
+# ==========================================
+
+# Archivos de configuración sensibles
+.env
+.env.*
+!.env.example
+
+# Directorio de secrets
+.secrets/
+*.key
+*.pem
+*.crt
+*.p12
+
+# ==========================================
+# DATABASE & STORAGE
+# ==========================================
+
+# PostgreSQL
+pgdata/
+postgres_data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Redis
+redis_data/
+dump.rdb
+
+# Qdrant
+qdrant_storage/
+qdrant_data/
+
+# Chatwoot
+chatwoot_storage/
+chatwoot_public/
+
+# n8n
+n8n_data/
+.n8n/
+
+# ==========================================
+# LOGS & DEBUG
+# ==========================================
+
+# Logs de aplicaciones
+*.log
+logs/
+log/
+tmp/
+temp/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+.dockerignore
+
+# ==========================================
+# IDE & EDITOR
+# ==========================================
+
+# VS Code
+.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+
+# Cursor
+.cursor/
+
+# JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ==========================================
+# OS & SYSTEM
+# ==========================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ==========================================
+# BACKUPS & TEMP
+# ==========================================
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+*.tmp
+*.temp
+
+# Archivos temporales
+.cache/
+.tmp/
+
+# ==========================================
+# CI/CD & DEPLOYMENT
+# ==========================================
+
+# GitHub Actions
+.github/workflows/*.log
+
+# Docker build artifacts
+docker-compose.override.yml
+
+# ==========================================
+# SENSITIVE DATA PATTERNS
+# ==========================================
+
+# API Keys (prevent accidental commits)
+*API_KEY*
+*SECRET*
+*TOKEN*
+*PASSWORD*
+
+# Never commit these patterns
+*sk-*
+*xoxb-*
+*ghp_*
+
+# ==========================================
+# EXPORT SEAL
+# ==========================================
+
+# EXPORT_SEAL v1
+# project: auto-atc
+# prompt_id: gitignore-v3
+# version: 3.0.0
+# file: .gitignore
+# lang: gitignore
+# created_at: 2025-11-08T00:00:00Z
+# author: auto-atc-setup
+# origin: security-config
