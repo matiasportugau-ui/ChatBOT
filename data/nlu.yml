@@ -1,25 +1,68 @@
-version: "3.1"
-
+version: '3.1'
 nlu:
 - intent: saludo
-  examples: |
-    - hola
+  examples: '- hola
+
     - buenas
+
     - buen día
+
     - qué tal
+
     - buenos días
 
+    '
 - intent: despedida
-  examples: |
-    - chau
+  examples: '- chau
+
     - adiós
+
     - nos vemos
+
     - hasta luego
 
+    '
 - intent: cotizar_producto
-  examples: |
-    - quiero cotizar [remera](producto)
+  examples: '- quiero cotizar [remera](producto)
+
     - necesito precio de [zapatillas](producto) [SKU-123](sku)
+
     - cotizame [3](cantidad) [gorras](producto)
+
     - precio de [buzo](producto)
+
     - cuánto sale [campera](producto) talle [L](sku)
+
+    '
+- intent: corregir
+  examples: '- eso está mal
+
+    - no es correcto
+
+    - está equivocado
+
+    - el precio está mal
+
+    - el precio debería ser [100](correccion)
+
+    - el producto se llama diferente
+
+    - la información es incorrecta
+
+    - corregir: [el precio es $50](correccion)
+
+    - en realidad es [otro nombre](correccion)
+
+    - mejor dicho [esto es lo correcto](correccion)
+
+    - eso no es así
+
+    - te equivocaste
+
+    - no es eso
+
+    '
+- intent: buscar_conocimiento
+  examples: "- buscar en la base de conocimiento\n- qué sabes sobre [precios](tema)\n\
+    - información sobre [productos](tema)\n- buscar correcciones\n- qué correcciones\
+    \ hay\n- mostrar conocimiento\n\n    - Cuanto valen el m2 de ISODEC de 10cm"

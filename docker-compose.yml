@@ -38,6 +38,14 @@ services:
     command: ["run","--enable-api","--cors","*","--port","5005"]
     volumes: ["./rasa:/app"]
     ports: ["5005:5005"]
+    environment:
+      - DOCKER_ENV=true
+      - PG_DSN=dbname=atcdb user=atc password=atc_pass host=postgres
+      - QDRANT_URL=http://qdrant:6333
+      - KB_COLLECTION=knowledge_base
+    depends_on:
+      - postgres
+      - qdrant
 
   qdrant:
     image: qdrant/qdrant:latest

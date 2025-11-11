@@ -3,3 +3,5 @@ rasa~=3.6
 pytest~=7.4
 requests>=2.31.0
 psycopg2-binary>=2.9
+pymongo>=4.0.0  # MongoDB driver for Atlas connections
+python-dotenv>=1.0.0  # For loading .env files

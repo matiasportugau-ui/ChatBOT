@@ -1,7 +1,29 @@
 {
-    "python.analysis.typeCheckingMode": "standard",
-    "shellcheck.executablePath": "/opt/homebrew/bin/shellcheck",
-    "shellcheck.customArgs": [],
-    "shellcheck.exclude": [],
-    "shellcheck.run": "onType"
+  "sqltools.connections": [
+    {
+      "name": "ChatBOT-Docker",
+      "driver": "PostgreSQL",
+      "server": "localhost",
+      "port": 5432,
+      "database": "atcdb",
+      "username": "atc",
+      "password": "atc_pass",
+      "previewLimit": 50,
+      "connectionTimeout": 10,
+      "ssl": false
+    },
+    {
+      "name": "ChatBOT-Local",
+      "driver": "PostgreSQL",
+      "server": "localhost",
+      "port": 5432,
+      "database": "atcdb",
+      "username": "atc",
+      "password": "atc_pass",
+      "previewLimit": 50,
+      "connectionTimeout": 10,
+      "ssl": false
+    }
+  ],
+  "sqltools.useNodeRuntime": true
 }

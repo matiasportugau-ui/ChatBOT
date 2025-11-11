@@ -19,6 +19,20 @@
 5. Verifica `reply_mode` con `WF_TOGGLE_reply_mode_v1` (POST {"reply_mode": true|false}).
 6. Define templates WhatsApp y prueba caso fuera de 24h.
 
+## SQLTools Integration
+
+The project includes SQLTools integration for database development:
+
+- **Setup Guide**: See `SQLTOOLS_SETUP.md` for complete setup instructions
+- **Example Queries**: See `queries/example_queries.sql` for ready-to-use queries
+- **Cursor Agent**: See `CURSOR_AGENT_README.md` for cursor-based operations
+- **Workspace Config**: SQLTools connections are pre-configured in `.vscode/settings.json` and `ChatBOTevo.code-workspace`
+
+Quick start:
+1. Install SQLTools extension (`mtxr.sqltools`) and PostgreSQL driver (`mtxr.sqltools-driver-pg`)
+2. Open SQLTools sidebar and connect to "PostgreSQL - ChatBOT (Docker)"
+3. Open `queries/example_queries.sql` and run queries
+
 ## Notas
 
 - Sustituye `{PLACEHOLDER}` por tus valores reales.

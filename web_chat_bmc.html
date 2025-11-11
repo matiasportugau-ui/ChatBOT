@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMC Chat Interface - ChatBOT Training</title>
+    <link rel="stylesheet" href="web_chat_bmc.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Header matching BMC Uruguay style -->
+    <header class="bmc-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='70' font-size='60' text-anchor='middle' fill='%23000F9F'%3EBMC%3C/text%3E%3C/svg%3E" alt="BMC Logo" class="logo">
+                <span class="logo-text">BMC URUGUAY</span>
+            </div>
+            <nav class="header-nav">
+                <button class="nav-btn active" data-panel="chat">Chat</button>
+                <button class="nav-btn" data-panel="training">Entrenar</button>
+                <button class="nav-btn" data-panel="analytics">Analíticas</button>
+            </nav>
+            <div class="header-status">
+                <span id="serverStatus" class="status-indicator">Conectando...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container with Split View -->
+    <main class="main-container">
+        <!-- Chat Panel (Left/Center) -->
+        <section class="panel chat-panel active" id="chatPanel">
+            <div class="panel-header">
+                <h2>Chat con ChatBOT</h2>
+                <button class="panel-toggle" data-panel="chat" title="Minimizar">−</button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <p>👋 ¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte?</p>
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <form id="chatForm" class="chat-form">
+                    <input 
+                        type="text" 
+                        id="messageInput" 
+                        class="chat-input" 
+                        placeholder="Escribe tu mensaje aquí..."
+                        autocomplete="off"
+                    />
+                    <button type="submit" id="sendButton" class="send-button">
+                        <span class="send-icon">➤</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Training Panel (Right) -->
+        <section class="panel training-panel" id="trainingPanel">
+            <div class="panel-header">
+                <h2>Entrenar ChatBOT</h2>
+                <button class="panel-toggle" data-panel="training" title="Minimizar">−</button>
+            </div>
+            <div class="panel-content">
+                <!-- Intent Selection -->
+                <div class="training-section">
+                    <label for="intentSelect">Intent:</label>
+                    <select id="intentSelect" class="form-select">
+                        <option value="">Seleccionar intent...</option>
+                    </select>
+                    <button id="newIntentBtn" class="btn-secondary">Nuevo Intent</button>
+                </div>
+
+                <!-- Add Example Form -->
+                <div class="training-section">
+                    <label for="exampleText">Ejemplo de texto:</label>
+                    <textarea 
+                        id="exampleText" 
+                        class="form-textarea" 
+                        placeholder="Escribe un ejemplo de lo que el usuario podría decir..."
+                        rows="3"
+                    ></textarea>
+                </div>
+
+                <!-- Entity Annotation -->
+                <div class="training-section">
+                    <label>Entidades (formato: [texto](entidad)):</label>
+                    <div class="entity-hint">
+                        Ejemplo: quiero cotizar [remera](producto) talle [M](sku)
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="training-actions">
+                    <button id="addExampleBtn" class="btn-primary">Agregar Ejemplo</button>
+                    <button id="viewExamplesBtn" class="btn-secondary">Ver Ejemplos</button>
+                    <button id="trainModelBtn" class="btn-train">Entrenar Modelo</button>
+                </div>
+
+                <!-- Examples List -->
+                <div class="training-section">
+                    <h3>Ejemplos Actuales</h3>
+                    <div id="examplesList" class="examples-list"></div>
+                </div>
+
+                <!-- Training Status -->
+                <div id="trainingStatus" class="training-status hidden"></div>
+            </div>
+        </section>
+
+        <!-- Analytics Panel (Bottom/Collapsible) -->
+        <section class="panel analytics-panel collapsed" id="analyticsPanel">
+            <div class="panel-header">
+                <h2>Analíticas</h2>
+                <button class="panel-toggle" data-panel="analytics" title="Expandir/Colapsar">+</button>
+            </div>
+            <div class="panel-content">
+                <div class="analytics-grid">
+                    <!-- Intent Confidence Chart -->
+                    <div class="analytics-card">
+                        <h3>Confianza de Intents</h3>
+                        <canvas id="intentChart"></canvas>
+                    </div>
+
+                    <!-- Entity Extraction Stats -->
+                    <div class="analytics-card">
+                        <h3>Extracción de Entidades</h3>
+                        <canvas id="entityChart"></canvas>
+                    </div>
+
+                    <!-- Conversation Stats -->
+                    <div class="analytics-card">
+                        <h3>Estadísticas de Conversación</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-label">Total Mensajes</span>
+                                <span class="stat-value" id="totalMessages">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Intents Detectados</span>
+                                <span class="stat-value" id="totalIntents">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Entidades Extraídas</span>
+                                <span class="stat-value" id="totalEntities">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Confianza Promedio</span>
+                                <span class="stat-value" id="avgConfidence">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Intent Distribution -->
+                    <div class="analytics-card">
+                        <h3>Distribución de Intents</h3>
+                        <div id="intentDistribution" class="intent-list"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Procesando...</p>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="web_chat_bmc.js"></script>
+</body>
+</html>
+

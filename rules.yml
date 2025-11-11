@@ -14,6 +14,16 @@ rules:
     - active_loop: null
     - action: action_register_quote
 
+- rule: manejar corrección
+  steps:
+    - intent: corregir
+    - action: action_handle_correction
+
+- rule: buscar en conocimiento
+  steps:
+    - intent: buscar_conocimiento
+    - action: action_search_knowledge
+
 # EXPORT_SEAL v1
 # project: auto-atc
 # prompt_id: rasa-rules-v3

@@ -5,6 +5,8 @@ intents:
   - saludo
   - despedida
   - fallback
+  - corregir
+  - buscar_conocimiento
 
 entities:
   - producto
@@ -65,7 +67,13 @@ responses:
     - text: "Hola, ¿cómo puedo ayudarte?"
   utter_despedida:
     - text: "Adiós, que tengas un buen día."
+  utter_correccion_recibida:
+    - text: "✅ Gracias por la corrección. La he guardado en la base de conocimiento."
+  utter_pedir_correccion:
+    - text: "Entiendo que algo está mal. ¿Podrías ser más específico sobre qué corregir?"
 
 actions:
   - action_cotizar
   - action_register_quote
+  - action_handle_correction
+  - action_search_knowledge

@@ -1,0 +1,31 @@
+{
+  "agent_id": "cursor_auto_pg",
+  "type": "sql_runtime_agent",
+  "driver": "PostgreSQL",
+  "connection": {
+    "name": "PostgreSQL - ChatBOT",
+    "server": "localhost",
+    "port": 5432,
+    "database": "atcdb",
+    "username": "atc",
+    "password": "atc_pass",
+    "ssl": false
+  },
+  "execution_mode": "transactional",
+  "auto_commit": false,
+  "cursor": {
+    "name": "process_interactions_cursor",
+    "query": "SELECT id, conversation_id, resumen, productos, created_at FROM interactions WHERE created_at > NOW() - INTERVAL '1 day' ORDER BY created_at",
+    "action": "process_interaction"
+  },
+  "implement": "auto",
+  "on_start": "DECLARE + OPEN",
+  "on_iterate": "FETCH + EXECUTE",
+  "on_end": "CLOSE + COMMIT",
+  "logging": {
+    "level": "info",
+    "target": "stdout",
+    "sample_rate": 0.1
+  }
+}
+

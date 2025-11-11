@@ -11,11 +11,40 @@
 		}
 	],
 	"settings": {
-		"python.analysis.typeCheckingMode": "standard"
+		"python.analysis.typeCheckingMode": "standard",
+		"sqltools.connections": [
+			{
+				"name": "ChatBOT-Docker",
+				"driver": "PostgreSQL",
+				"server": "localhost",
+				"port": 5432,
+				"database": "atcdb",
+				"username": "atc",
+				"password": "atc_pass",
+				"previewLimit": 50,
+				"connectionTimeout": 10,
+				"ssl": false
+			},
+			{
+				"name": "ChatBOT-Local",
+				"driver": "PostgreSQL",
+				"server": "localhost",
+				"port": 5432,
+				"database": "atcdb",
+				"username": "atc",
+				"password": "atc_pass",
+				"previewLimit": 50,
+				"connectionTimeout": 10,
+				"ssl": false
+			}
+		],
+		"sqltools.useNodeRuntime": true
 	},
 	"extensions": {
 		"recommendations": [
-			"ms-windows-ai-studio.windows-ai-studio"
+			"ms-windows-ai-studio.windows-ai-studio",
+			"mtxr.sqltools",
+			"mtxr.sqltools-driver-pg"
 		]
 	},
 	"launch": {

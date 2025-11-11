@@ -21,6 +21,9 @@ n8n_data/
 .env.local
 .env.chatwoot
 .env.n8n
+.env.*.local
+*.credentials
+credentials.local.*
 
 # OS
 .DS_Store

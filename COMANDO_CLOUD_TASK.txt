@@ -1,0 +1,15 @@
+COMANDO PARA EJECUTAR EN CODEX CLOUD:
+
+bash scripts/cloud_task_phase1.sh
+
+---
+INSTRUCCIONES RÁPIDAS:
+1. Abre panel Codex en IDE
+2. Selecciona tu entorno
+3. Activa "Run in the cloud"
+4. Source: "Off current branch" (harden/ci-and-guardrails)
+5. Pega el comando arriba
+6. Inicia la tarea
+
+Ver guía completa en: INICIAR_CLOUD_TASK.md
+

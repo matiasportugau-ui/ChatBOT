@@ -1,9 +1,9 @@
 {
-  "cotizar_producto": {
+  "despedida": {
     "precision": 1.0,
     "recall": 1.0,
     "f1-score": 1.0,
-    "support": 5,
+    "support": 4,
     "confused_with": {}
   },
   "saludo": {
@@ -13,11 +13,11 @@
     "support": 5,
     "confused_with": {}
   },
-  "despedida": {
+  "cotizar_producto": {
     "precision": 1.0,
     "recall": 1.0,
     "f1-score": 1.0,
-    "support": 4,
+    "support": 5,
     "confused_with": {}
   },
   "accuracy": 1.0,
